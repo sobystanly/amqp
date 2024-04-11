@@ -189,7 +189,7 @@ func Prefetch(count, size int) BrokerOption {
 	}
 }
 
-/ SetupBroker creates a new instance of broker
+// SetupBroker creates a new instance of broker
 func (b *Broker) SetupBroker(exchanges []Exchange, queues []Queue, opts ...BrokerOption) error {
 	b.d = &amqpDialer{}
 	b.exchanges = exchanges
