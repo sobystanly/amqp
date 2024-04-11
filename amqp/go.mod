@@ -1,4 +1,4 @@
-module amqp
+module github.com/sobystanly/tucows-interview/amqp
 
 go 1.22.0
 
