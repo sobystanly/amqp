@@ -1,1 +1,1 @@
-# amqp rabbitmq library
+# Setup
