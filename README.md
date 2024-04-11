@@ -1,1 +1,1 @@
-# amqp
+# amqp rabbitmq library
