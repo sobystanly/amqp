@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/sobystanly/tucows-interview/amqp"
 	"github.com/sobystanly/tucows-interview/order-management/cmd/config"
 	"github.com/sobystanly/tucows-interview/order-management/data"
 	"github.com/sobystanly/tucows-interview/order-management/db"
 	"github.com/sobystanly/tucows-interview/order-management/handler"
 	"github.com/sobystanly/tucows-interview/order-management/logic"
+	"github.com/sobystanly/tucows-interview/order-management/process"
 	"log"
 	"net/http"
 	"os"
@@ -23,9 +25,6 @@ func main() {
 	//if err != nil {
 	//	log.Printf("error setting rabbitmq credentials: %v", err)
 	//}
-	//
-	//broker := amqp.Broker{}
-	//err = broker.SetupBroker([]amqp.Exchange{}, []amqp.Queue{})
 
 	ctx := context.Background()
 
@@ -52,9 +51,30 @@ func main() {
 	productsDB.Add(ctx, predefinedProducts)
 	customerDB.Add(ctx, predefinedCustomer)
 
-	orderLogic := logic.NewOrder(ordersDB)
+	broker := &amqp.Broker{}
+	orderLogic := logic.NewOrder(ordersDB, broker)
 	oh := handler.NewOrderHandler(orderLogic)
 	ph := handler.NewProductHandler(productsDB)
+
+	////////////// Set up RabbitMQ /////////////////
+	p := process.NewProcess()
+	err = broker.SetupBroker([]amqp.Exchange{
+		amqp.ExchangeWithDefaults(process.OrderManagement, ""),
+	}, []amqp.Queue{
+		{
+			Name:       process.OrderPaymentResult,
+			Durable:    true,
+			AutoDelete: false,
+			Exclusive:  false,
+			NoWait:     false,
+			Bindings: []amqp.Binding{
+				amqp.BindingWithDefaults(process.OrderPaymentResult, process.OrderManagement),
+			},
+			Consumers: []amqp.Consumer{
+				amqp.ConsumerWithDefaults(false, p.ProcessAMQPMsg),
+			},
+		},
+	})
 
 	log.Printf("Starting HTTP server....")
 

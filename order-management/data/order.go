@@ -28,4 +28,19 @@ type (
 		ProductID uuid.UUID
 		Quantity  int
 	}
+
+	OrderPaymentStatus struct {
+		OrderID    uuid.UUID `json:"orderId"`
+		CustomerID uuid.UUID `json:"customerId"`
+		PaymentID  uuid.UUID `json:"paymentId"`
+		Success    bool      `json:"success"`
+		paidAt     time.Time `json:"paidAt"`
+		Reason     string    `json:"reason"` //optional field showing reason for failure if payment fail.
+	}
+
+	OrderPaymentReq struct {
+		OrderID     uuid.UUID `json:"orderId"`
+		CustomerID  uuid.UUID `json:"customerId"`
+		TotalAmount float64   `json:"totalAmount"`
+	}
 )

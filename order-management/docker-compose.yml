@@ -1,6 +1,11 @@
 version: '3.8'
 
 services:
+  rabbitmq:
+    image: "rabbitmq:latest"
+    ports:
+      - "5672:5672"  # RabbitMQ default port
+      - "15672:15672"  # RabbitMQ management plugin port
   postgres:
     image: postgres:latest
     ports:
