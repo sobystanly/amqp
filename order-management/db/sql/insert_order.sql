@@ -1,0 +1,1 @@
+INSERT INTO orders(order_id, customer_id, order_status, payment_status, order_date) VALUES ($1, $2, $3, $4, $5);

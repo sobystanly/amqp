@@ -7,6 +7,7 @@ import (
 	"github.com/sobystanly/tucows-interview/order-management/data"
 	"github.com/sobystanly/tucows-interview/order-management/db"
 	"github.com/sobystanly/tucows-interview/order-management/handler"
+	"github.com/sobystanly/tucows-interview/order-management/logic"
 	"log"
 	"net/http"
 	"os"
@@ -46,18 +47,22 @@ func main() {
 
 	productsDB := db.NewProductDB(pDB)
 	customerDB := db.NewCustomerDB(pDB)
+	ordersDB := db.NewOrderDB(pDB)
 
 	productsDB.Add(ctx, predefinedProducts)
 	customerDB.Add(ctx, predefinedCustomer)
 
+	orderLogic := logic.NewOrder(ordersDB)
+	oh := handler.NewOrderHandler(orderLogic)
+	ph := handler.NewProductHandler(productsDB)
+
 	log.Printf("Starting HTTP server....")
 
-	h := handler.NewHandler()
+	h := handler.NewHandler(ph, oh)
 	router := handler.NewRouter(h)
 	httpServer := &http.Server{
-		Addr:      ":8000",
-		Handler:   router,
-		TLSConfig: nil,
+		Addr:    ":8001",
+		Handler: router,
 	}
 
 	terminationChannel := make(chan os.Signal, 1)
