@@ -14,26 +14,8 @@ func (h *Handler) GetRoutes() []Route {
 		{
 			Name:        "CheckHealth",
 			Method:      http.MethodGet,
-			Pattern:     "/orderManagement/health",
+			Pattern:     "/paymentProcessing/health",
 			HandlerFunc: h.CheckHealth,
-		},
-		{
-			Name:        "GetAllProducts",
-			Method:      http.MethodGet,
-			Pattern:     "/orderManagement/products",
-			HandlerFunc: h.ph.GetAllProducts,
-		},
-		{
-			Name:        "AddOrder",
-			Method:      http.MethodPost,
-			Pattern:     "/orderManagement/order",
-			HandlerFunc: h.oh.Add,
-		},
-		{
-			Name:        "GetOrder",
-			Method:      http.MethodGet,
-			Pattern:     "/orderManagement/order",
-			HandlerFunc: h.oh.GetOrder,
 		},
 	}
 }

@@ -52,23 +52,23 @@ func main() {
 	customerDB.Add(ctx, predefinedCustomer)
 
 	broker := &amqp.Broker{}
-	orderLogic := logic.NewOrder(ordersDB, broker)
+	orderLogic := logic.NewOrder(ordersDB, broker, productsDB)
 	oh := handler.NewOrderHandler(orderLogic)
 	ph := handler.NewProductHandler(productsDB)
 
 	////////////// Set up RabbitMQ /////////////////
-	p := process.NewProcess()
+	p := process.NewProcess(orderLogic)
 	err = broker.SetupBroker([]amqp.Exchange{
 		amqp.ExchangeWithDefaults(process.OrderManagement, ""),
 	}, []amqp.Queue{
 		{
-			Name:       process.OrderPaymentResult,
+			Name:       process.PaymentStat,
 			Durable:    true,
 			AutoDelete: false,
 			Exclusive:  false,
 			NoWait:     false,
 			Bindings: []amqp.Binding{
-				amqp.BindingWithDefaults(process.OrderPaymentResult, process.OrderManagement),
+				amqp.BindingWithDefaults(process.PaymentStat, process.OrderManagement),
 			},
 			Consumers: []amqp.Consumer{
 				amqp.ConsumerWithDefaults(false, p.ProcessAMQPMsg),

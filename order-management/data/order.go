@@ -11,6 +11,8 @@ const (
 	FAILED    = "failed"
 	PLACED    = "placed"
 	CANCELLED = "cancelled"
+	SUCCESS   = "success"
+	SHIPPED   = "shipped"
 )
 
 type (
