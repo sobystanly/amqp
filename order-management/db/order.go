@@ -25,10 +25,13 @@ var insertOrder string
 //go:embed sql/insert_order_products.sql
 var orderProducts string
 
+// AddOrderAndProductAssociation adds a new order to orders tables and also update the associated order_products table
+// in a transaction
 func (oDB *orderDB) AddOrderAndProductAssociation(ctx context.Context, order data.Order) error {
+	//Begin transaction
 	tx, err := oDB.db.client.Begin(ctx)
 	if err != nil {
-		log.Fatalf("error begining transaction: %s", err)
+		log.Printf("error begining transaction: %s", err)
 		return err
 	}
 	defer func() {
@@ -52,7 +55,7 @@ func (oDB *orderDB) AddOrderAndProductAssociation(ctx context.Context, order dat
 	//commit transaction
 	err = tx.Commit(ctx)
 	if err != nil {
-		log.Fatalf("error committing transaction:%s", err)
+		log.Printf("error committing transaction:%s", err)
 		return err
 	}
 
@@ -62,6 +65,8 @@ func (oDB *orderDB) AddOrderAndProductAssociation(ctx context.Context, order dat
 //go:embed sql/update_order_and_payment_status.sql
 var updateOrderAndPaymentStatus string
 
+// UpdatePaymentStatus updates the payment status of an order after receiving the payment status from payment service, this
+// method updates the paymentStatus field and orderStatus field of the order.
 func (oDB *orderDB) UpdatePaymentStatus(ctx context.Context, paymentStatus, orderStatus string, orderID uuid.UUID) error {
 	var err error
 	_, err = oDB.db.client.Exec(ctx, updateOrderAndPaymentStatus, paymentStatus, orderStatus, orderID)
@@ -114,4 +119,13 @@ func (oDB *orderDB) GetOrders(ctx context.Context) ([]data.Order, error) {
 	}
 
 	return orders, nil
+}
+
+//go:embed sql/delete_order_by_id.sql
+var deleteOrderByID string
+
+func (oDB *orderDB) DeleteOrderByID(ctx context.Context, orderID uuid.UUID) error {
+	var err error
+	_, err = oDB.db.client.Exec(ctx, deleteOrderByID, orderID)
+	return err
 }

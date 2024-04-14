@@ -28,7 +28,7 @@ func NewProductHandler(pDB productsDB) *productHandler {
 	return &productHandler{pDB: pDB}
 }
 
-func (ph *productHandler) updatePredefinedProducts() {
+func (ph *productHandler) AddProducts() {
 
 }
 

@@ -57,3 +57,12 @@ func (pDB *productDB) UpdateProductQuantity(ctx context.Context, orderID uuid.UU
 	_, err = pDB.db.client.Exec(ctx, updateProductQuantity, orderID)
 	return err
 }
+
+//go:embed sql/delete_product_by_id.sql
+var deleteProductByID string
+
+func (pDB *productDB) DeleteProductByID(ctx context.Context, productID uuid.UUID) error {
+	var err error
+	_, err = pDB.db.client.Exec(ctx, deleteProductByID, productID)
+	return err
+}

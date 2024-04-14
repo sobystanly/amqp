@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sobystanly/tucows-interview/amqp"
 	"github.com/sobystanly/tucows-interview/order-management/data"
@@ -20,18 +21,24 @@ type (
 	productDB interface {
 		UpdateProductQuantity(ctx context.Context, orderID uuid.UUID) error
 	}
+	broker interface {
+		Publish(ctx context.Context, p amqp.Publish) error
+	}
 	Order struct {
 		orderDB   orderDB
-		broker    *amqp.Broker
+		broker    broker
 		productDB productDB
 	}
 )
 
-func NewOrder(orderDB orderDB, b *amqp.Broker, productDB productDB) *Order {
+func NewOrder(orderDB orderDB, b broker, productDB productDB) *Order {
 	return &Order{orderDB: orderDB, broker: b, productDB: productDB}
 }
 
 func (ol *Order) Add(ctx context.Context, order data.Order) (data.Order, error) {
+	if len(order.Products) <= 0 {
+		return data.Order{}, fmt.Errorf("no products in order")
+	}
 	orderID, err := uuid.NewUUID()
 	if err != nil {
 		log.Fatalf("error generating orderID: %s", err)
@@ -69,8 +76,9 @@ func (ol *Order) Add(ctx context.Context, order data.Order) (data.Order, error) 
 		order.OrderStatus = data.FAILED
 		updateErr := ol.UpdateOrderPaymentStatus(ctx, data.OrderPaymentStatus{OrderID: order.OrderID, Success: false, Reason: "failed to process payment failed"})
 		if updateErr != nil {
-			log.Fatalf("failed to mark as failed after failing to publish payment message to payment exchange: %s, updateErr: %s", err, updateErr)
+			log.Printf("failed to mark as failed after failing to publish payment message to payment exchange: %s, updateErr: %s", err, updateErr)
 		}
+		return data.Order{}, err
 	}
 
 	log.Printf("successfully submitted request for payment processing")
@@ -89,14 +97,16 @@ func (ol *Order) UpdateOrderPaymentStatus(ctx context.Context, orderPaymentStatu
 
 	err := ol.orderDB.UpdatePaymentStatus(ctx, paymentStatus, orderStatus, orderPaymentStatus.OrderID)
 	if err != nil {
-		log.Fatalf("error updating payment and order status of order: %s, err: %s", orderPaymentStatus.OrderID, err)
+		log.Printf("error updating payment and order status of order: %s, err: %s", orderPaymentStatus.OrderID, err)
 		return err
 	}
 
-	err = ol.productDB.UpdateProductQuantity(ctx, orderPaymentStatus.OrderID)
-	if err != nil {
-		log.Fatalf("error updating product quantity after order: %s, err: %s", orderPaymentStatus.OrderID, err)
-		return err
+	if orderPaymentStatus.Success {
+		err = ol.productDB.UpdateProductQuantity(ctx, orderPaymentStatus.OrderID)
+		if err != nil {
+			log.Printf("error updating product quantity after order: %s, err: %s", orderPaymentStatus.OrderID, err)
+			return err
+		}
 	}
 	return err
 }

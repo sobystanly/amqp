@@ -23,3 +23,11 @@ func TestHandler_CheckHealth(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 }
+
+func TestNewRouter(t *testing.T) {
+	t.Run("successfully initialise the router with the routes set up in handler", func(t *testing.T) {
+		h := NewHandler(&productHandler{}, &OrderHandler{})
+		router := NewRouter(h)
+		assert.NotNil(t, router)
+	})
+}
