@@ -17,8 +17,11 @@ const (
 )
 
 type (
+	broker interface {
+		Publish(ctx context.Context, p amqp.Publish) error
+	}
 	Process struct {
-		broker *amqp.Broker
+		broker broker
 	}
 
 	PaymentReq struct {
@@ -38,7 +41,7 @@ type (
 	}
 )
 
-func NewProcess(br *amqp.Broker) *Process {
+func NewProcess(br broker) *Process {
 	return &Process{broker: br}
 }
 
@@ -71,7 +74,7 @@ func (p *Process) ProcessPayment(ctx context.Context, d amqp.Delivery) error {
 
 	err := json.Unmarshal(d.Body, &paymentReq)
 	if err != nil {
-		log.Fatalf("error unmarshalling payment request: %s", err)
+		log.Printf("error unmarshalling payment request: %s", err)
 		return err
 	}
 
