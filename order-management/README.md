@@ -166,5 +166,3 @@ processing service.
 This integration streamlines the handling of payment events and enables real-time updates on payment statuses.
 
 It uses the custom AMQP library in this repo to publish payment events to designated queues.
-
-# Illustration If It was deployed to a cluster
