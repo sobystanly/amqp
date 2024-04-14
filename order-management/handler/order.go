@@ -28,14 +28,14 @@ func (oh *OrderHandler) Add(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	order, err := decodeReq(r)
 	if err != nil {
-		log.Fatalf("error unmarshalling order request: %s", err)
-		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "error decoding order request"})
+		log.Printf("error unmarshalling order request: %s", err)
+		respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "error decoding order request"})
 		return
 	}
 
 	order, err = oh.orderLogic.Add(ctx, order)
 	if err != nil {
-		log.Fatalf("error processing order, err: %v", err)
+		log.Printf("error processing order, err: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "error processing the order request"})
 		return
 	}
@@ -51,7 +51,7 @@ func (oh *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 
 	orders, err := oh.orderLogic.GetOrder(ctx)
 	if err != nil {
-		log.Fatalf("error fecthing order: %s", err)
+		log.Printf("error fecthing order: %s", err)
 		respondWithJSON(w, http.StatusInternalServerError, map[string]error{"error": err})
 		return
 	}

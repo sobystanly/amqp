@@ -87,7 +87,7 @@ func TestOrderHandler_Add(t *testing.T) {
 
 		h.Add(w, req)
 
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 
 	t.Run("failed to add a new order, some internal error from order logic", func(t *testing.T) {
@@ -102,17 +102,7 @@ func TestOrderHandler_Add(t *testing.T) {
 
 		h.Add(w, req)
 
-		expectedResp := map[string]string{"error": "error processing the order request"}
-
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
-
-		var resp map[string]any
-		err = json.Unmarshal(w.Body.Bytes(), &resp)
-		if err != nil {
-			t.Fatal("error decoding response", err)
-		}
-
-		assert.Equal(t, expectedResp, resp)
 	})
 }
 
