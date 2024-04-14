@@ -450,6 +450,8 @@ type Publish struct {
 // Publishing is same as amqp.Publishing, so consumers of this package do not need to import amqp package too
 type Publishing amqp.Publishing
 
+const Transient = amqp.Transient
+
 // PublishWithDefaults creates a Publish with default values
 func PublishWithDefaults(exchange, key string, body []byte) Publish {
 	return Publish{
