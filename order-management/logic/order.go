@@ -17,6 +17,7 @@ type (
 		AddOrderAndProductAssociation(ctx context.Context, order data.Order) error
 		UpdatePaymentStatus(ctx context.Context, paymentStatus, orderStatus string, orderID uuid.UUID) error
 		GetOrders(ctx context.Context) ([]data.Order, error)
+		DeleteOrderByID(ctx context.Context, orderID uuid.UUID) error
 	}
 	productDB interface {
 		UpdateProductQuantity(ctx context.Context, orderID uuid.UUID) error
@@ -113,4 +114,8 @@ func (ol *Order) UpdateOrderPaymentStatus(ctx context.Context, orderPaymentStatu
 
 func (ol *Order) GetOrder(ctx context.Context) ([]data.Order, error) {
 	return ol.orderDB.GetOrders(ctx)
+}
+
+func (ol *Order) DeleteOrderByID(ctx context.Context, orderID uuid.UUID) error {
+	return ol.orderDB.DeleteOrderByID(ctx, orderID)
 }

@@ -69,11 +69,30 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(25)*time.Second)
 	defer cancel()
 
+	shutdownGracefully(ctx, httpServer, broker)
+}
+
+func shutdownGracefully(ctx context.Context, httpServer *http.Server, broker *amqp.Broker) {
+
+	//trying to shut down the rabbitmq consumers for specific queues
+	errs := broker.ShutDownConsumersForQueues([]string{process.ProcessPayment})
+	if errs == nil {
+		log.Printf("successfully shut down rabbitmq consumers for specific queues")
+	} else {
+		log.Printf("error happened when shutting down specific queues: %v", errs)
+	}
+
 	//shutdown the HTTP server
-	if err = httpServer.Shutdown(ctx); err != nil {
+	if err := httpServer.Shutdown(ctx); err != nil {
 		log.Printf("failed to gracefully shutdown HTTP server: %s", err)
 	} else {
 		log.Printf("successfully gracefully shutdown HTTP server.")
+	}
+
+	if err := broker.ShutDown(ctx); err != nil {
+		log.Printf("failed to gracefully shutdown rabbitMQ broker: %s", err.Error())
+	} else {
+		log.Printf("successfully and gracefully shut down rabbitMQ broker")
 	}
 
 	log.Printf("Exiting payment-processing service...")

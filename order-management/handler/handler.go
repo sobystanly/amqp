@@ -9,10 +9,11 @@ import (
 type Handler struct {
 	ph *productHandler
 	oh *OrderHandler
+	ch *CustomerHandler
 }
 
-func NewHandler(ph *productHandler, oh *OrderHandler) *Handler {
-	return &Handler{ph: ph, oh: oh}
+func NewHandler(ph *productHandler, oh *OrderHandler, ch *CustomerHandler) *Handler {
+	return &Handler{ph: ph, oh: oh, ch: ch}
 }
 
 func NewRouter(h *Handler) *mux.Router {

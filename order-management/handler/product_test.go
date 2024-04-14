@@ -94,6 +94,10 @@ type mockProductDB struct {
 	allProductsRes []data.Product
 }
 
+func (m mockProductDB) DeleteProductByID(ctx context.Context, productID uuid.UUID) error {
+	return m.err
+}
+
 func (m mockProductDB) Add(ctx context.Context, product data.Product) error {
 	return m.err
 }

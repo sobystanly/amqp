@@ -11,11 +11,27 @@ type Route struct {
 
 func (h *Handler) GetRoutes() []Route {
 	return []Route{
+		//Health check endpoint
 		{
 			Name:        "CheckHealth",
 			Method:      http.MethodGet,
 			Pattern:     "/orderManagement/health",
 			HandlerFunc: h.CheckHealth,
+		},
+
+		//customer API
+		{
+			Name:        "AddCustomer",
+			Method:      http.MethodPost,
+			Pattern:     "/orderManagement/customer",
+			HandlerFunc: h.ch.Add,
+		},
+		//Product APIs
+		{
+			Name:        "AddProduct",
+			Method:      http.MethodPost,
+			Pattern:     "/orderManagement/product",
+			HandlerFunc: h.ph.AddProducts,
 		},
 		{
 			Name:        "GetAllProducts",
@@ -23,6 +39,14 @@ func (h *Handler) GetRoutes() []Route {
 			Pattern:     "/orderManagement/products",
 			HandlerFunc: h.ph.GetAllProducts,
 		},
+		{
+			Name:        "DeleteProductByID",
+			Method:      http.MethodDelete,
+			Pattern:     "/orderManagement/product",
+			HandlerFunc: h.ph.DeleteProductByID,
+		},
+
+		//Order APIs
 		{
 			Name:        "AddOrder",
 			Method:      http.MethodPost,
@@ -34,6 +58,12 @@ func (h *Handler) GetRoutes() []Route {
 			Method:      http.MethodGet,
 			Pattern:     "/orderManagement/order",
 			HandlerFunc: h.oh.GetOrder,
+		},
+		{
+			Name:        "DeleteOrderByID",
+			Method:      http.MethodDelete,
+			Pattern:     "/orderManagement/order/{id}",
+			HandlerFunc: h.oh.DeleteOrderByID,
 		},
 	}
 }

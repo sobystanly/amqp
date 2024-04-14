@@ -26,15 +26,17 @@ type (
 	}
 )
 
-//TODO figure out db creation at the end
-
 func InitDB(ctx context.Context) (*db, error) {
 	connConfig := fmt.Sprintf("postgres://%s:%s@localhost:5432/Ecommerce", config.Global.PostgresUsername, config.Global.PostgresPassword)
 	conn, err := pgx.Connect(ctx, connConfig)
 	if err != nil {
 		return nil, err
 	}
-	return &db{client: conn}, err
+	return &db{client: conn}, nil
+}
+
+func (db *db) Close(ctx context.Context) error {
+	return db.client.Close(ctx)
 }
 
 //go:embed sql/create_customers_table.sql

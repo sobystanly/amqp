@@ -189,6 +189,10 @@ type mockOrderDB struct {
 	updatePaymentStatusErr error
 }
 
+func (m mockOrderDB) DeleteOrderByID(ctx context.Context, orderID uuid.UUID) error {
+	return m.err
+}
+
 func (m mockOrderDB) AddOrderAndProductAssociation(ctx context.Context, order data.Order) error {
 	return m.err
 }

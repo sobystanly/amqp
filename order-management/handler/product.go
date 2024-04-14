@@ -2,6 +2,10 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/sobystanly/tucows-interview/order-management/data"
 	"log"
 	"net/http"
@@ -17,6 +21,7 @@ type (
 	productsDB interface {
 		Add(ctx context.Context, product data.Product) error
 		GetAll(ctx context.Context, offset, limit int) ([]data.Product, error)
+		DeleteProductByID(ctx context.Context, productID uuid.UUID) error
 	}
 
 	productHandler struct {
@@ -28,8 +33,28 @@ func NewProductHandler(pDB productsDB) *productHandler {
 	return &productHandler{pDB: pDB}
 }
 
-func (ph *productHandler) AddProducts() {
+func (ph *productHandler) AddProducts(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
+	var product data.Product
+	err := json.NewDecoder(r.Body).Decode(&product)
+	if err != nil {
+		log.Printf("error decoding product: %s", err.Error())
+		respondWithJSON(w, http.StatusBadRequest, err)
+		return
+	}
+
+	product.ProductID = uuid.New()
+
+	err = ph.pDB.Add(ctx, product)
+	if err != nil {
+		log.Printf("error adding product: %s", err.Error())
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	log.Printf("successfully added a new product: %v", product)
+	respondWithJSON(w, http.StatusCreated, product)
 }
 
 func (ph *productHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
@@ -59,4 +84,23 @@ func (ph *productHandler) GetAllProducts(w http.ResponseWriter, r *http.Request)
 
 	log.Printf("successfully fetched all products: %v", products)
 	respondWithJSON(w, http.StatusOK, products)
+}
+
+func (ph *productHandler) DeleteProductByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	vars := mux.Vars(r)
+
+	productID := vars["id"]
+
+	err := ph.pDB.DeleteProductByID(ctx, uuid.MustParse(productID))
+	if err != nil {
+		log.Printf("error deleting a product by ID: %s", err.Error())
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	log.Printf("successfully deleted product with ID: %s", productID)
+
+	respondWithJSON(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("successfully deleted product with ID: %s", productID)})
 }

@@ -3,6 +3,9 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/sobystanly/tucows-interview/order-management/data"
 	"log"
 	"net/http"
@@ -12,6 +15,7 @@ type (
 	OrderLogic interface {
 		Add(ctx context.Context, order data.Order) (data.Order, error)
 		GetOrder(ctx context.Context) ([]data.Order, error)
+		DeleteOrderByID(ctx context.Context, orderID uuid.UUID) error
 	}
 	OrderHandler struct {
 		orderLogic OrderLogic
@@ -58,6 +62,25 @@ func (oh *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("successfully fetch order: %v", orders)
 	respondWithJSON(w, http.StatusOK, orders)
+}
+
+func (oh *OrderHandler) DeleteOrderByID(w http.ResponseWriter, r *http.Request) {
+
+	log.Printf("received a request to delete order by ID: %v", r)
+	ctx := r.Context()
+
+	vars := mux.Vars(r)
+
+	orderID := vars["id"]
+
+	err := oh.orderLogic.DeleteOrderByID(ctx, uuid.MustParse(orderID))
+	if err != nil {
+		log.Printf("error deleting an order by ID: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]string{"message": fmt.Sprintf("successfully deleted order with ID: %s", orderID)})
 }
 
 func decodeReq(req *http.Request) (data.Order, error) {

@@ -55,6 +55,7 @@ func main() {
 	orderLogic := logic.NewOrder(ordersDB, broker, productsDB)
 	oh := handler.NewOrderHandler(orderLogic)
 	ph := handler.NewProductHandler(productsDB)
+	ch := handler.NewCustomerHandler(customerDB)
 
 	////////////// Set up RabbitMQ /////////////////
 	p := process.NewProcess(orderLogic)
@@ -78,7 +79,7 @@ func main() {
 
 	log.Printf("Starting HTTP server....")
 
-	h := handler.NewHandler(ph, oh)
+	h := handler.NewHandler(ph, oh, ch)
 	router := handler.NewRouter(h)
 	httpServer := &http.Server{
 		Addr:    ":8001",
@@ -101,11 +102,37 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(25)*time.Second)
 	defer cancel()
 
+	shutdownGracefully(ctx, httpServer, broker, pDB.Close)
+}
+
+func shutdownGracefully(ctx context.Context, httpServer *http.Server, broker *amqp.Broker, postgresClose func(ctx context.Context) error) {
+
+	//trying to shut down the rabbitmq consumers for specific queues
+	errs := broker.ShutDownConsumersForQueues([]string{process.PaymentStat})
+	if errs == nil {
+		log.Printf("successfully shut down rabbitmq consumers for specific queues")
+	} else {
+		log.Printf("error happened when shutting down specific queues: %v", errs)
+	}
+
 	//shutdown the HTTP server
-	if err = httpServer.Shutdown(ctx); err != nil {
+	if err := httpServer.Shutdown(ctx); err != nil {
 		log.Printf("failed to gracefully shutdown HTTP server: %s", err)
 	} else {
-		log.Printf("successfully gracefully shutdown HTTP server.")
+		log.Printf("successfully and gracefully shutdown HTTP server.")
+	}
+
+	if err := broker.ShutDown(ctx); err != nil {
+		log.Printf("failed to gracefully shutdown rabbitMQ broker: %s", err.Error())
+	} else {
+		log.Printf("successfully and gracefully shut down rabbitMQ broker")
+	}
+
+	err := postgresClose(ctx)
+	if err != nil {
+		log.Printf("failed to gracefullt close postgres connection: %s", err.Error())
+	} else {
+		log.Printf("successfully and gracefully closed postgres connection")
 	}
 
 	log.Printf("Exiting order-management service...")

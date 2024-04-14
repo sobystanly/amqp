@@ -9,7 +9,7 @@ import (
 
 func TestHandler_CheckHealth(t *testing.T) {
 	t.Run("successfully return as healthy", func(t *testing.T) {
-		h := NewHandler(&productHandler{}, &OrderHandler{})
+		h := NewHandler(&productHandler{}, &OrderHandler{}, &CustomerHandler{})
 
 		req, err := http.NewRequest(http.MethodGet, "orderManagement/health", nil)
 		if err != nil {
@@ -26,7 +26,7 @@ func TestHandler_CheckHealth(t *testing.T) {
 
 func TestNewRouter(t *testing.T) {
 	t.Run("successfully initialise the router with the routes set up in handler", func(t *testing.T) {
-		h := NewHandler(&productHandler{}, &OrderHandler{})
+		h := NewHandler(&productHandler{}, &OrderHandler{}, &CustomerHandler{})
 		router := NewRouter(h)
 		assert.NotNil(t, router)
 	})

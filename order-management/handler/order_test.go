@@ -202,6 +202,10 @@ type mockOrderLogic struct {
 	err    error
 }
 
+func (m mockOrderLogic) DeleteOrderByID(ctx context.Context, orderID uuid.UUID) error {
+	return m.err
+}
+
 func (m mockOrderLogic) GetOrder(ctx context.Context) ([]data.Order, error) {
 	return m.orders, m.err
 }
