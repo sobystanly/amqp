@@ -71,6 +71,9 @@ graph LR;
         order1[Order Service 1]
         order2[Order Service 2]
         order3[Order Service 3]
+        primary[Primary DB]
+        secondary1[Secondary DB 1]
+        secondary2[Secondary DB 2]
     end
     subgraph "RabbitMQ"
         rabbitMQ[RabbitMQ]
@@ -82,11 +85,6 @@ graph LR;
     end
     subgraph "Load Balancer"
         lb1((LB1))
-    end
-    subgraph "PostgreSQL"
-        primary[Primary DB]
-        secondary1[Secondary DB 1]
-        secondary2[Secondary DB 2]
     end
     lb1 -->|Route traffic to| order1;
     lb1 -->|Route traffic to| order2;
