@@ -67,19 +67,10 @@ The documentation for each service can be found at respective readme.md of both 
 
 ```mermaid
 graph LR;
-    subgraph "Load Balancer"
-        lb1((LB1))
-    end
     subgraph "Order Service"
         order1[Order Service 1]
         order2[Order Service 2]
         order3[Order Service 3]
-        lb1 -->|Route traffic to| order1;
-        lb1 -->|Route traffic to| order2;
-        lb1 -->|Route traffic to| order3;
-        order1 -->|Emits order events to| rabbitMQ;
-        order2 -->|Emits order events to| rabbitMQ;
-        order3 -->|Emits order events to| rabbitMQ;
     end
     subgraph "RabbitMQ"
         rabbitMQ[RabbitMQ]
@@ -88,11 +79,26 @@ graph LR;
         payment1[Payment Service 1]
         payment2[Payment Service 2]
         payment3[Payment Service 3]
-        rabbitMQ -->|Publishes order events to| payment1;
-        rabbitMQ -->|Publishes order events to| payment2;
-        rabbitMQ -->|Publishes order events to| payment3;
-        payment1 -->|Emits payment status events to| rabbitMQ;
-        payment2 -->|Emits payment status events to| rabbitMQ;
-        payment3 -->|Emits payment status events to| rabbitMQ;
     end
+    subgraph "Load Balancer"
+        lb1((LB1))
+    end
+    lb1 -->|Route traffic to| order1;
+    lb1 -->|Route traffic to| order2;
+    lb1 -->|Route traffic to| order3;
+    order1 -->|Emits order events| rabbitMQ;
+    order2 -->|Emits order events| rabbitMQ;
+    order3 -->|Emits order events| rabbitMQ;
+    rabbitMQ -->|Subscribes to payment status events| order1;
+    rabbitMQ -->|Subscribes to payment status events| order2;
+    rabbitMQ -->|Subscribes to payment status events| order3;
+    rabbitMQ -->|Publishes order events| payment1;
+    rabbitMQ -->|Publishes order events| payment2;
+    rabbitMQ -->|Publishes order events| payment3;
+    payment1 -->|Emits payment status events| rabbitMQ;
+    payment2 -->|Emits payment status events| rabbitMQ;
+    payment3 -->|Emits payment status events| rabbitMQ;
+    
+    order1 --> order2;
+    order2 --> order3;
 ```
