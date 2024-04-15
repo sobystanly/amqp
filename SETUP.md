@@ -83,6 +83,11 @@ graph LR;
     subgraph "Load Balancer"
         lb1((LB1))
     end
+    subgraph "PostgreSQL"
+        primary[Primary DB]
+        secondary1[Secondary DB 1]
+        secondary2[Secondary DB 2]
+    end
     lb1 -->|Route traffic to| order1;
     lb1 -->|Route traffic to| order2;
     lb1 -->|Route traffic to| order3;
@@ -98,7 +103,12 @@ graph LR;
     payment1 -->|Emits payment status events| rabbitMQ;
     payment2 -->|Emits payment status events| rabbitMQ;
     payment3 -->|Emits payment status events| rabbitMQ;
-    
-    order1 --> order2;
-    order2 --> order3;
+    order1 -->|Writes| primary;
+    order2 -->|Writes| primary;
+    order3 -->|Writes| primary;
+    order1 -->|Reads| secondary1;
+    order2 -->|Reads| secondary2;
+    order3 -->|Reads| secondary1;
+    primary -->|Replicates| secondary1;
+    primary -->|Replicates| secondary2;
 ```
