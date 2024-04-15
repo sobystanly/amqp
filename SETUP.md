@@ -62,3 +62,37 @@ The documentation for each service can be found at respective readme.md of both 
 
 [order-management](order-management/README.md)
 [payment-processing](payment-processing/README.md)
+
+### Communication Flow Between Order and Payment Services
+
+```mermaid
+graph LR;
+    subgraph "Load Balancer"
+        lb1((LB1))
+    end
+    subgraph "Order Service"
+        order1[Order Service 1]
+        order2[Order Service 2]
+        order3[Order Service 3]
+        lb1 -->|Route traffic to| order1;
+        lb1 -->|Route traffic to| order2;
+        lb1 -->|Route traffic to| order3;
+        order1 -->|Emits order events to| rabbitMQ;
+        order2 -->|Emits order events to| rabbitMQ;
+        order3 -->|Emits order events to| rabbitMQ;
+    end
+    subgraph "RabbitMQ"
+        rabbitMQ[RabbitMQ]
+    end
+    subgraph "Payment Service"
+        payment1[Payment Service 1]
+        payment2[Payment Service 2]
+        payment3[Payment Service 3]
+        rabbitMQ -->|Publishes order events to| payment1;
+        rabbitMQ -->|Publishes order events to| payment2;
+        rabbitMQ -->|Publishes order events to| payment3;
+        payment1 -->|Emits payment status events to| rabbitMQ;
+        payment2 -->|Emits payment status events to| rabbitMQ;
+        payment3 -->|Emits payment status events to| rabbitMQ;
+    end
+```
