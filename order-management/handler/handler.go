@@ -18,6 +18,7 @@ func NewHandler(ph *productHandler, oh *OrderHandler, ch *CustomerHandler) *Hand
 
 func NewRouter(h *Handler) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+	router.Use(h.RequestIDMiddleware)
 	for _, route := range h.GetRoutes() {
 		hf := route.HandlerFunc
 		router.Methods(route.Method).Name(route.Name).Handler(hf).Path(route.Pattern)

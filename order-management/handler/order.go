@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 	"github.com/sobystanly/tucows-interview/order-management/data"
-	"log"
 	"net/http"
 )
 
@@ -27,8 +27,9 @@ func NewOrderHandler(ol OrderLogic) *OrderHandler {
 }
 
 func (oh *OrderHandler) Add(w http.ResponseWriter, r *http.Request) {
-	log.Printf("received a request to place an order: %v", r)
 
+	requestID := r.Context().Value("requestID").(string)
+	log.Printf("received a request with requestID: %s to place an order: %v", requestID, r)
 	ctx := r.Context()
 	order, err := decodeReq(r)
 	if err != nil {

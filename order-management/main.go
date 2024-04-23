@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/sobystanly/tucows-interview/amqp"
 	"github.com/sobystanly/tucows-interview/order-management/cmd/config"
 	"github.com/sobystanly/tucows-interview/order-management/data"
@@ -10,7 +12,6 @@ import (
 	"github.com/sobystanly/tucows-interview/order-management/handler"
 	"github.com/sobystanly/tucows-interview/order-management/logic"
 	"github.com/sobystanly/tucows-interview/order-management/process"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,6 +28,8 @@ func main() {
 	//}
 
 	ctx := context.Background()
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log := log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	log.Printf("Initializing DB...")
 
