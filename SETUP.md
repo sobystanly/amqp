@@ -6,8 +6,8 @@
 Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/sobystanly/tucows-interview
-cd tucows-interview
+git clone https://github.com/sobystanly/ecommerce
+cd ecommerce
 ```
 ### 2. Running Docker Compose
 - Start PostgreSQL and RabbitMQ using Docker Compose
